@@ -1,0 +1,22 @@
+name: Backend CI 
+on: 
+  pull_request: 
+    branches: [ main ] 
+jobs: 
+  test: 
+    runs-on: ubuntu-latest 
+    steps: 
+    - uses: actions/checkout@v3 
+    - name: Set up Python 
+      uses: actions/setup-python@v4 
+      with: 
+        python-version: '3.10' 
+    - name: Install dependencies 
+      run: pip install -r fastapi-ai-worker/requirements.txt pytest httpx 
+    - name: Run Tests 
+      env: 
+        PROJECT_NAME: "DocuMind-Test" 
+        DATABASE_URL: "postgresql://postgres:pass@localhost:5432/test_db" 
+        KAFKA_BROKER_URL: "localhost:9092" 
+        PYTHONPATH: "." 
+      run: cd fastapi-ai-worker && pytest app/tests/ 

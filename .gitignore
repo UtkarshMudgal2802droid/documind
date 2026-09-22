@@ -1,0 +1,51 @@
+# ========================
+# Secrets & Environments
+# ========================
+.env
+.env.local
+.env.production
+venv/
+env/
+.venv/
+
+# ========================
+# Python / FastAPI Worker
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+alembic.ini
+
+# ========================
+# Java / Spring Boot Core
+# ========================
+target/
+*.class
+*.jar
+*.war
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+
+# ========================
+# Node.js / React Frontend
+# ========================
+node_modules/
+build/
+dist/
+
+# ========================
+# IDEs & OS Files
+# ========================
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+
+# ========================
+# Local Tool Caches
+# ========================
+.sf/
+.sfdx/

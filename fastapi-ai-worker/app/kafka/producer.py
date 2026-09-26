@@ -4,7 +4,7 @@ from app.core.config import settings
 
 producer_config = {
     'bootstrap.servers': settings.KAFKA_BROKER_URL,
-    'client.id': 'documind-api-worker'
+    'client.id': f'{settings.PROJECT_NAME.lower()}-api-worker'
 }
 
 producer = Producer(producer_config)

@@ -55,7 +55,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         </motion.div>
 
         <h1 className="login-title">Welcome back</h1>
-        <p className="login-subtitle">Sign in to DocuMind AI platform</p>
+        <p className="login-subtitle">Sign in to {import.meta.env.VITE_PROJECT_NAME || 'the'} AI platform</p>
 
         <form className="login-form" onSubmit={handleLogin} noValidate>
           <div className="input-group">

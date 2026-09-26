@@ -7,12 +7,14 @@ const apiClient = axios.create({
     timeout: 30000, // 30 second timeout
 });
 
+export const TOKEN_KEY = import.meta.env.VITE_PROJECT_NAME ? `${import.meta.env.VITE_PROJECT_NAME.toLowerCase()}_token` : 'app_token';
+
 // Helper to pull the secure token from the browser session
 const getAuthToken = () => {
-    const token = localStorage.getItem('documind_token');
+    const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
         // Token expired or missing — force re-login
-        localStorage.removeItem('documind_token');
+        localStorage.removeItem(TOKEN_KEY);
         window.location.reload();
         throw new Error("Session expired. Redirecting to login.");
     }
@@ -24,7 +26,7 @@ apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            localStorage.removeItem('documind_token');
+            localStorage.removeItem(TOKEN_KEY);
             window.location.reload();
         }
         return Promise.reject(error);
@@ -47,7 +49,7 @@ export const documentService = {
         });
 
         // Save the token securely in the browser
-        localStorage.setItem('documind_token', response.data.access_token);
+        localStorage.setItem(TOKEN_KEY, response.data.access_token);
         return response.data;
     },
 

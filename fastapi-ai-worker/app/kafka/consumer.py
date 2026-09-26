@@ -11,7 +11,7 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 
 consumer_config = {
     'bootstrap.servers': settings.KAFKA_BROKER_URL,
-    'group.id': 'documind-ai-processors',
+    'group.id': f'{settings.PROJECT_NAME.lower()}-ai-processors',
     'auto.offset.reset': 'earliest' # Reads unread messages from the beginning
 }
 

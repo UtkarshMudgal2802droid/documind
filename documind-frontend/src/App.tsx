@@ -5,6 +5,7 @@ import { LogOut, Zap } from 'lucide-react';
 import { DocumentUpload } from './components/DocumentUpload';
 import { DocumentSearch } from './components/DocumentSearch';
 import { Login } from './components/Login';
+import { TOKEN_KEY } from './services/api';
 import './App.css';
 
 const App: React.FC = () => {
@@ -12,13 +13,13 @@ const App: React.FC = () => {
 
   // Check if the user already logged in previously
   useEffect(() => {
-    const token = localStorage.getItem('documind_token');
+    const token = localStorage.getItem(TOKEN_KEY);
     if (token) setIsAuthenticated(true);
   }, []);
 
   // Secure logout handler
   const handleLogout = () => {
-    localStorage.removeItem('documind_token');
+    localStorage.removeItem(TOKEN_KEY);
     setIsAuthenticated(false);
   };
 
@@ -68,7 +69,7 @@ const App: React.FC = () => {
               <div className="navbar-brand">
                 <div className="navbar-logo">DM</div>
                 <div className="navbar-title">
-                  Docu<span>Mind</span>
+                  {import.meta.env.VITE_PROJECT_NAME || 'DocuMind'}
                 </div>
               </div>
 

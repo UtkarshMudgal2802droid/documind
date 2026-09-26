@@ -6,15 +6,15 @@ services:
     container_name: documind-postgres
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-documind_admin}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-infy_documind123}
-      POSTGRES_DB: ${POSTGRES_DB:-documind_db}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U documind_admin -d documind_db"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -58,15 +58,15 @@ services:
       kafka:
         condition: service_started
     environment:
-      - PROJECT_NAME=${PROJECT_NAME:-DocuMind-Production}
+      - PROJECT_NAME=${PROJECT_NAME}
       # Pointing to the internal Docker network name 'postgres'
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-documind_admin}:${POSTGRES_PASSWORD:-infy_documind123}@postgres:5432/${POSTGRES_DB:-documind_db}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       # Pointing to the internal Docker network name 'kafka' on the internal listener port 29092
       - KAFKA_BROKER_URL=${KAFKA_BROKER_URL:-kafka:29092}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - CORS_ORIGINS=${CORS_ORIGINS:-https://documind-frontend-6xq3cil83-utkarsh-mudgals-projects.vercel.app}
+      - CORS_ORIGINS=${CORS_ORIGINS}
 
   # Kafka Background Worker Service
   kafka-worker:
@@ -81,8 +81,8 @@ services:
       kafka:
         condition: service_started
     environment:
-      - PROJECT_NAME=${PROJECT_NAME:-DocuMind-Worker}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-documind_admin}:${POSTGRES_PASSWORD:-infy_documind123}@postgres:5432/${POSTGRES_DB:-documind_db}
+      - PROJECT_NAME=${PROJECT_NAME}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - KAFKA_BROKER_URL=${KAFKA_BROKER_URL:-kafka:29092}
 
 volumes:

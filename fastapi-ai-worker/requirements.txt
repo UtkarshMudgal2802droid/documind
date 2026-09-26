@@ -5,3 +5,8 @@ psycopg2-binary
 pgvector
 pydantic-settings
 confluent-kafka
+sentence-transformers
+python-multipart
+PyJWT
+passlib
+numpy<2.0.0

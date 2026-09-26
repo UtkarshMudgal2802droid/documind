@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: documind-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-documind_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-infy_documind123}
+      POSTGRES_DB: ${POSTGRES_DB:-documind_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U documind_admin -d documind_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: documind-zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: documind-kafka
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # FastAPI Backend Service
+  fastapi-api:
+    build: 
+      context: ./fastapi-ai-worker
+    container_name: documind-api
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      - PROJECT_NAME=${PROJECT_NAME:-DocuMind-Production}
+      # Pointing to the internal Docker network name 'postgres'
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-documind_admin}:${POSTGRES_PASSWORD:-infy_documind123}@postgres:5432/${POSTGRES_DB:-documind_db}
+      # Pointing to the internal Docker network name 'kafka' on the internal listener port 29092
+      - KAFKA_BROKER_URL=${KAFKA_BROKER_URL:-kafka:29092}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - CORS_ORIGINS=${CORS_ORIGINS:-https://documind-frontend-6xq3cil83-utkarsh-mudgals-projects.vercel.app}
+
+  # Kafka Background Worker Service
+  kafka-worker:
+    build: 
+      context: ./fastapi-ai-worker
+    container_name: documind-worker
+    restart: always
+    command: ["python", "-m", "app.kafka.consumer"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      - PROJECT_NAME=${PROJECT_NAME:-DocuMind-Worker}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-documind_admin}:${POSTGRES_PASSWORD:-infy_documind123}@postgres:5432/${POSTGRES_DB:-documind_db}
+      - KAFKA_BROKER_URL=${KAFKA_BROKER_URL:-kafka:29092}
+
+volumes:
+  postgres_data:

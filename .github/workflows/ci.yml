@@ -16,7 +16,10 @@ jobs:
     - name: Run Tests 
       env: 
         PROJECT_NAME: "DocuMind-Test" 
-        DATABASE_URL: "postgresql://postgres:pass@localhost:5432/test_db" 
+        DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test_db" 
         KAFKA_BROKER_URL: "localhost:9092" 
+        JWT_SECRET_KEY: "ci_test_secret_key_12345" 
+        ADMIN_USERNAME: "utkarsh_admin" 
+        ADMIN_PASSWORD: "backend_auth_2026" 
         PYTHONPATH: "." 
       run: cd fastapi-ai-worker && pytest app/tests/ 

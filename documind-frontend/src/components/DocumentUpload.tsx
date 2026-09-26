@@ -5,15 +5,45 @@ import { Upload, FileText, X, CheckCircle, AlertCircle, CloudUpload } from 'luci
 import toast from 'react-hot-toast';
 import { documentService } from '../services/api';
 
+const MAX_FILE_SIZE_MB = 10;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+const ALLOWED_TYPES = ['application/pdf', 'text/plain'];
+const ALLOWED_EXTENSIONS = ['.pdf', '.txt'];
+
 export const DocumentUpload: React.FC = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [uploadComplete, setUploadComplete] = useState(false);
 
+  const validateFile = (file: File): string | null => {
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext) && !ALLOWED_TYPES.includes(file.type)) {
+      return `"${file.name}" is not a supported file type. Only PDF and TXT files are allowed.`;
+    }
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      return `"${file.name}" exceeds the ${MAX_FILE_SIZE_MB}MB size limit.`;
+    }
+    if (file.size === 0) {
+      return `"${file.name}" is empty and cannot be uploaded.`;
+    }
+    return null;
+  };
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    setFiles((prev) => [...prev, ...acceptedFiles]);
-    setUploadComplete(false);
+    const validFiles: File[] = [];
+    for (const file of acceptedFiles) {
+      const error = validateFile(file);
+      if (error) {
+        toast.error(error);
+      } else {
+        validFiles.push(file);
+      }
+    }
+    if (validFiles.length > 0) {
+      setFiles((prev) => [...prev, ...validFiles]);
+      setUploadComplete(false);
+    }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -22,6 +52,7 @@ export const DocumentUpload: React.FC = () => {
       'application/pdf': ['.pdf'],
       'text/plain': ['.txt'],
     },
+    maxSize: MAX_FILE_SIZE_BYTES,
   });
 
   const removeFile = (index: number) => {
@@ -49,9 +80,10 @@ export const DocumentUpload: React.FC = () => {
         await documentService.uploadDocument(files[i]);
         successCount++;
         setProgress({ current: i + 1, total: files.length });
-      } catch {
+      } catch (err: unknown) {
         failCount++;
-        toast.error(`Failed to upload ${files[i].name}`);
+        const message = err instanceof Error ? err.message : 'Upload failed';
+        toast.error(`${files[i].name}: ${message}`);
       }
     }
 
@@ -60,10 +92,7 @@ export const DocumentUpload: React.FC = () => {
     setFiles([]);
 
     if (successCount > 0) {
-      toast.success(`${successCount} document${successCount > 1 ? 's' : ''} queued for AI vectorization`);
-    }
-    if (failCount > 0) {
-      toast.error(`${failCount} upload${failCount > 1 ? 's' : ''} failed`);
+      toast.success(`${successCount} document${successCount > 1 ? 's' : ''} queued for AI processing`);
     }
   };
 
@@ -71,11 +100,11 @@ export const DocumentUpload: React.FC = () => {
     <div className="card">
       <div className="card-header">
         <div className="card-icon card-icon--blue">
-          <Upload size={20} />
+          <Upload size={18} />
         </div>
         <div>
           <div className="card-title">Document Ingestion</div>
-          <div className="card-subtitle">Upload PDFs or text files for AI vectorization</div>
+          <div className="card-subtitle">Upload PDF or TXT files (max {MAX_FILE_SIZE_MB}MB each)</div>
         </div>
       </div>
 
@@ -85,16 +114,16 @@ export const DocumentUpload: React.FC = () => {
       >
         <input {...getInputProps()} />
         <div className="dropzone-icon">
-          <CloudUpload size={36} />
+          <CloudUpload size={32} />
         </div>
         <p className="dropzone-text">
           {isDragActive ? (
             'Drop files here...'
           ) : (
-            <>Drag & drop files here, or <strong>click to browse</strong></>
+            <>Drag & drop files, or <strong>click to browse</strong></>
           )}
         </p>
-        <p className="dropzone-hint">Supports PDF and TXT files</p>
+        <p className="dropzone-hint">PDF and TXT files up to {MAX_FILE_SIZE_MB}MB</p>
       </div>
 
       <AnimatePresence>
@@ -109,12 +138,12 @@ export const DocumentUpload: React.FC = () => {
               <motion.li
                 key={`${file.name}-${index}`}
                 className="file-item"
-                initial={{ opacity: 0, x: -12 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 12 }}
-                transition={{ delay: index * 0.05 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ delay: index * 0.04 }}
               >
-                <FileText size={16} className="file-item-icon" />
+                <FileText size={15} className="file-item-icon" />
                 <span className="file-item-name">{file.name}</span>
                 <span className="file-item-size">{formatSize(file.size)}</span>
                 <button
@@ -122,7 +151,7 @@ export const DocumentUpload: React.FC = () => {
                   onClick={(e) => { e.stopPropagation(); removeFile(index); }}
                   aria-label={`Remove ${file.name}`}
                 >
-                  <X size={14} />
+                  <X size={13} />
                 </button>
               </motion.li>
             ))}
@@ -151,21 +180,21 @@ export const DocumentUpload: React.FC = () => {
           className="btn btn-primary btn-full"
           onClick={handleUpload}
           whileTap={{ scale: 0.98 }}
-          style={{ marginTop: '1rem' }}
+          style={{ marginTop: '0.85rem' }}
         >
-          <Upload size={16} />
-          Upload {files.length} file{files.length > 1 ? 's' : ''} to AI Pipeline
+          <Upload size={15} />
+          Upload {files.length} file{files.length > 1 ? 's' : ''}
         </motion.button>
       )}
 
       {uploadComplete && (
         <motion.div
           className="status-msg status-msg--success"
-          initial={{ opacity: 0, y: -8 }}
+          initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <CheckCircle size={16} />
-          All documents have been queued for AI vectorization
+          <CheckCircle size={14} />
+          All documents queued for AI vectorization
         </motion.div>
       )}
     </div>

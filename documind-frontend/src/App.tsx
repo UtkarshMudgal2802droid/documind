@@ -27,12 +27,20 @@ const App: React.FC = () => {
       <Toaster
         position="top-right"
         toastOptions={{
+          duration: 4000,
           style: {
-            background: 'var(--bg-card)',
-            color: 'var(--text-primary)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '0.85rem',
+            background: '#ffffff',
+            color: '#111118',
+            border: '1px solid #e8e8ee',
+            borderRadius: '8px',
+            fontSize: '0.82rem',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          },
+          success: {
+            iconTheme: { primary: '#16a34a', secondary: '#fff' },
+          },
+          error: {
+            iconTheme: { primary: '#dc2626', secondary: '#fff' },
           },
         }}
       />
@@ -70,7 +78,7 @@ const App: React.FC = () => {
                   Connected
                 </div>
                 <button className="btn btn-danger" onClick={handleLogout}>
-                  <LogOut size={15} />
+                  <LogOut size={14} />
                   Sign Out
                 </button>
               </div>
@@ -78,37 +86,38 @@ const App: React.FC = () => {
 
             {/* Hero */}
             <motion.div
-              style={{ marginBottom: '2rem' }}
-              initial={{ opacity: 0, y: 16 }}
+              style={{ marginBottom: '1.75rem' }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
+              transition={{ delay: 0.1 }}
             >
               <h1 style={{
-                fontSize: '2rem',
-                fontWeight: 800,
-                letterSpacing: '-1px',
-                marginBottom: '0.4rem',
-                lineHeight: 1.2
+                fontSize: '1.65rem',
+                fontWeight: 750,
+                letterSpacing: '-0.8px',
+                marginBottom: '0.3rem',
+                lineHeight: 1.2,
+                color: 'var(--text-primary)'
               }}>
                 AI Document Intelligence
               </h1>
               <p style={{
-                fontSize: '0.95rem',
+                fontSize: '0.88rem',
                 color: 'var(--text-secondary)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem'
+                gap: '0.4rem'
               }}>
-                <Zap size={16} style={{ color: 'var(--accent-amber)' }} />
-                Upload documents and search them using natural language, powered by vector embeddings
+                <Zap size={15} style={{ color: 'var(--accent-amber)' }} />
+                Upload documents and search using natural language
               </p>
             </motion.div>
 
             {/* Content */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
+              transition={{ delay: 0.2 }}
             >
               <DocumentUpload />
               <DocumentSearch />

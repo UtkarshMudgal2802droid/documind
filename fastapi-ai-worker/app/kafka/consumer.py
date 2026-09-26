@@ -1,22 +1,16 @@
 import json
-import os
 from sentence_transformers import SentenceTransformer
 from app.db.models import Document, ProcessingStatus
 from confluent_kafka import Consumer
-from dotenv import load_dotenv
 from app.db.session import SessionLocal
-from app.db.models import Document
+from app.core.config import settings
 import fitz
-
-load_dotenv()
-
-KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
 
 print("Initializing AI Embedding Model (all-MiniLM-L6-v2)...")
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 consumer_config = {
-    'bootstrap.servers': KAFKA_BROKER_URL,
+    'bootstrap.servers': settings.KAFKA_BROKER_URL,
     'group.id': 'documind-ai-processors',
     'auto.offset.reset': 'earliest' # Reads unread messages from the beginning
 }

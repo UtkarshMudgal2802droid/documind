@@ -3,7 +3,7 @@ import type { UploadResponse, SearchResponse } from '../types/document';
 import type { LoginResponse } from '../types/auth';
 
 const apiClient = axios.create({
-    baseURL: 'http://127.0.0.1:8000',
+    baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000',
 });
 
 // Helper to pull the secure token from the browser session

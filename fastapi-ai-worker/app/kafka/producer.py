@@ -1,14 +1,9 @@
 import json
-import os
 from confluent_kafka import Producer
-from dotenv import load_dotenv
-
-load_dotenv()
-
-KAFKA_BROKER_URL = os.getenv("KAFKA_BROKER_URL")
+from app.core.config import settings
 
 producer_config = {
-    'bootstrap.servers': KAFKA_BROKER_URL,
+    'bootstrap.servers': settings.KAFKA_BROKER_URL,
     'client.id': 'documind-api-worker'
 }
 

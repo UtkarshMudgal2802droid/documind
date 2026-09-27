@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, User, Eye, EyeOff, AlertCircle, ArrowRight, Sparkles, Shield, Zap, XCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Lock, User, Eye, EyeOff, AlertCircle, ArrowRight, Sparkles, Shield, Zap, XCircle, CheckCircle } from 'lucide-react';
 import { documentService } from '../services/api';
 
 interface LoginProps {
@@ -16,6 +15,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [errorMsg, setErrorMsg] = useState('');
   const [touched, setTouched] = useState({ username: false, password: false });
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const usernameError = touched.username && !username.trim() ? 'Username is required' : '';
   const passwordError = touched.password && !password.trim() ? 'Password is required' : '';
@@ -32,11 +32,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       setErrorMsg('');
       await documentService.login(username.trim(), password);
       setStatus('idle');
-      toast.success('Welcome back! Signed in successfully.', {
-        icon: '🎉',
-        duration: 3000,
-      });
-      onLoginSuccess();
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        onLoginSuccess();
+      }, 2000);
     } catch (err: any) {
       setStatus('error');
       const detail = err.response?.data?.detail || err.message || 'Something went wrong. Please try again.';
@@ -279,66 +279,103 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             transition={{ duration: 0.2 }}
             style={{
               position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)',
+              backgroundColor: 'rgba(0, 0, 0, 0.25)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               zIndex: 9999, padding: '1rem',
             }}
             onClick={() => setShowErrorModal(false)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.85, y: 20 }}
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.85, y: 20 }}
+              exit={{ opacity: 0, scale: 0.9, y: 15 }}
               transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
               onClick={(e) => e.stopPropagation()}
               style={{
-                background: '#ffffff', borderRadius: '16px', padding: '2.5rem 2rem 2rem',
-                maxWidth: '380px', width: '100%', textAlign: 'center',
-                boxShadow: '0 25px 60px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.08)',
+                background: '#ffffff', borderRadius: '16px', padding: '2rem 2rem 1.75rem',
+                maxWidth: '340px', width: '100%', textAlign: 'center',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.06)',
               }}
             >
-              {/* Red Error Icon */}
               <div style={{
-                width: '64px', height: '64px', borderRadius: '50%',
+                width: '56px', height: '56px', borderRadius: '50%',
                 background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 1.25rem',
-                border: '1px solid rgba(220, 38, 38, 0.1)',
+                margin: '0 auto 1rem',
               }}>
-                <XCircle size={32} color="#dc2626" />
+                <XCircle size={28} color="#dc2626" />
               </div>
 
-              {/* Title */}
-              <h3 style={{
-                fontSize: '1.2rem', fontWeight: 700, color: '#1e1b4b',
-                marginBottom: '0.5rem', letterSpacing: '-0.3px',
-              }}>
-                Authentication Failed
-              </h3>
-
-              {/* Error Message */}
               <p style={{
-                fontSize: '0.9rem', color: '#64748b', lineHeight: 1.6,
-                marginBottom: '1.75rem',
+                fontSize: '0.95rem', color: '#1e1b4b', lineHeight: 1.5,
+                marginBottom: '1.5rem', fontWeight: 500,
               }}>
                 {errorMsg}
               </p>
 
-              {/* OK Button */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setShowErrorModal(false)}
                 style={{
-                  width: '100%', padding: '0.75rem 1.5rem',
+                  width: '100%', padding: '0.7rem 1.5rem',
                   background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
                   color: '#ffffff', border: 'none', borderRadius: '10px',
-                  fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
+                  fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(99, 102, 241, 0.3)',
                 }}
               >
                 OK
               </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Success Modal Popup */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 9999, padding: '1rem',
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 15 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              style={{
+                background: '#ffffff', borderRadius: '16px', padding: '2rem 2rem 1.75rem',
+                maxWidth: '340px', width: '100%', textAlign: 'center',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.06)',
+              }}
+            >
+              <div style={{
+                width: '56px', height: '56px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 1rem',
+              }}>
+                <CheckCircle size={28} color="#059669" />
+              </div>
+
+              <p style={{
+                fontSize: '1.05rem', color: '#1e1b4b', lineHeight: 1.5,
+                fontWeight: 600, marginBottom: '0.3rem',
+              }}>
+                Welcome, {username}!
+              </p>
+              <p style={{ fontSize: '0.82rem', color: '#64748b' }}>
+                Signing you in...
+              </p>
             </motion.div>
           </motion.div>
         )}

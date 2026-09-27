@@ -195,8 +195,11 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 
     user = db.query(User).filter(User.username == form_data.username).first()
     
-    if not user or not verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid username. No such user exists.")
+        
+    if not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid password.")
         
     if user.is_active != "true":
         raise HTTPException(status_code=403, detail="Account is disabled")

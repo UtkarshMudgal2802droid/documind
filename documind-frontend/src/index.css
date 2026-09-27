@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 *, *::before, *::after {
   margin: 0;
@@ -9,44 +9,57 @@
 :root {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 
-  /* Modern, Clean Light Theme Aesthetics */
-  --bg-primary: #fcfcfc; /* Extremely subtle off-white for contrast against white cards */
-  --bg-secondary: #f3f4f6;
+  /* Premium Light Theme — Indigo / Violet */
+  --bg-primary: #f8f9fc;
+  --bg-secondary: #f1f3f9;
   --bg-card: #ffffff;
-  --bg-card-hover: #fafafa;
-  --bg-input: #ffffff;
+  --bg-card-hover: #fafbfe;
+  --bg-input: #f9fafb;
   --bg-input-focus: #ffffff;
-  --border-primary: #e5e7eb;
-  --border-accent: #d1d5db;
-  --border-focus: #000000;
-  
-  --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --text-muted: #9ca3af;
+  --border-primary: #e2e5f0;
+  --border-accent: #c7cce0;
+  --border-focus: #6366f1;
+
+  --text-primary: #1e1b4b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
   --text-on-accent: #ffffff;
-  
-  /* Stark, minimalist accent */
-  --accent-blue: #000000; /* Black accent for modern premium feel */
-  --accent-blue-light: #374151;
-  --accent-purple: #111827;
-  --accent-pink: #1f2937;
-  
-  --accent-gradient: linear-gradient(135deg, #111827, #374151);
-  
+
+  /* Rich Indigo / Violet accent palette */
+  --accent-blue: #6366f1;
+  --accent-blue-light: #818cf8;
+  --accent-blue-glow: rgba(99, 102, 241, 0.08);
+  --accent-blue-solid: rgba(99, 102, 241, 0.1);
+
+  --accent-purple: #7c3aed;
+  --accent-purple-solid: rgba(124, 58, 237, 0.1);
+  --accent-pink: #ec4899;
+
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #8b5cf6 100%);
+
   --accent-green: #059669;
+  --accent-green-glow: rgba(5, 150, 105, 0.06);
+  --accent-green-solid: rgba(5, 150, 105, 0.1);
+
   --accent-red: #dc2626;
-  
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --accent-red-glow: rgba(220, 38, 38, 0.06);
+
+  --accent-amber: #d97706;
+  --accent-amber-glow: rgba(217, 119, 6, 0.06);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
   --radius-xl: 20px;
-  
-  /* Crisp, subtle shadows */
+
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
-  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.06), 0 4px 10px rgba(0, 0, 0, 0.03);
-  
+  --shadow-sm: 0 2px 8px rgba(99, 102, 241, 0.04), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 24px rgba(99, 102, 241, 0.06), 0 2px 6px rgba(0, 0, 0, 0.03);
+  --shadow-xl: 0 20px 50px rgba(99, 102, 241, 0.08), 0 6px 16px rgba(0, 0, 0, 0.04);
+
+  --blur-sm: blur(8px);
+
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -65,15 +78,9 @@ body {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  /* Ultra clean subtle background pattern */
-  background-image: radial-gradient(#d1d5db 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
-@keyframes mesh-rotate {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.1); }
-  100% { transform: rotate(360deg) scale(1); }
+  /* Subtle dot pattern */
+  background-image: radial-gradient(#d5d8e8 0.8px, transparent 0.8px);
+  background-size: 20px 20px;
 }
 
 #root {

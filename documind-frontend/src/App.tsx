@@ -67,9 +67,9 @@ const App: React.FC = () => {
             {/* Navbar */}
             <nav className="navbar">
               <div className="navbar-brand">
-                <div className="navbar-logo">DM</div>
+                <div className="navbar-logo" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', boxShadow: '0 2px 8px rgba(99,102,241,0.25)' }}>DM</div>
                 <div className="navbar-title">
-                  {import.meta.env.VITE_PROJECT_NAME || 'DocuMind'}
+                  {import.meta.env.VITE_PROJECT_NAME || 'DocuMind'}<span style={{ color: '#6366f1' }}>.ai</span>
                 </div>
               </div>
 

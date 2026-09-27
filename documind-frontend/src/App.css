@@ -495,23 +495,23 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background-color: #f9fafb;
+  background-color: #f8f9fc;
 }
 
 .login-card {
   width: 100%;
   max-width: 440px;
   background: #ffffff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-primary);
   border-radius: var(--radius-xl);
   padding: 3.5rem 3rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  box-shadow: var(--shadow-xl);
 }
 
 .login-logo {
   width: 48px;
   height: 48px;
-  background: var(--accent-blue);
+  background: var(--accent-gradient);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
@@ -520,6 +520,7 @@
   font-weight: 800;
   font-size: 1.1rem;
   margin: 0 auto 1.25rem;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .login-title {

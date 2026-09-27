@@ -240,10 +240,9 @@
   font-family: var(--font-sans);
   font-size: 0.95rem;
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: var(--blur-sm);
+  background: var(--bg-input);
   border: 1px solid var(--border-primary);
-  border-radius: 100px; /* Floating pill shape */
+  border-radius: var(--radius-md);
   outline: none;
   transition: all var(--transition-base);
   box-shadow: var(--shadow-xs);
@@ -504,13 +503,11 @@
 .login-card {
   width: 100%;
   max-width: 440px;
-  background: rgba(15, 15, 20, 0.4);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
   padding: 3.5rem 3rem;
-  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: var(--shadow-xl);
 }
 
 .login-logo {

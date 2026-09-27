@@ -31,9 +31,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       await documentService.login(username.trim(), password);
       setStatus('idle');
       onLoginSuccess();
-    } catch {
+    } catch (err: any) {
       setStatus('error');
-      setErrorMsg('Invalid credentials. Please check your username and password.');
+      const msg = err.response?.data?.detail || err.message || 'Unknown error';
+      setErrorMsg(`Failed: ${msg}`);
     }
   };
 

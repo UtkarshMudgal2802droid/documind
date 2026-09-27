@@ -60,14 +60,14 @@ services:
         condition: service_started
     environment:
       - PROJECT_NAME=${PROJECT_NAME}
-      # Pointing to the internal Docker network name 'postgres'
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      # Pointing to the internal Docker network name 'kafka' on the internal listener port 29092
       - KAFKA_BROKER_URL=${KAFKA_BROKER_URL:-kafka:29092}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - CORS_ORIGINS=${CORS_ORIGINS}
+    volumes:
+      - uploads_data:/app/uploads
 
   # Kafka Background Worker Service
   kafka-worker:
@@ -90,6 +90,9 @@ services:
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - CORS_ORIGINS=${CORS_ORIGINS}
+    volumes:
+      - uploads_data:/app/uploads
 
 volumes:
   postgres_data:
+  uploads_data:

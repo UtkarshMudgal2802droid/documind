@@ -121,17 +121,17 @@ async def upload_document(
     if len(content) == 0:
         raise HTTPException(status_code=400, detail="Cannot upload an empty file.")
 
-    # 3. Create the database record with original filename
-    new_doc = Document(filename=file.filename, content_type=file.content_type)
-    db.add(new_doc)
-    db.commit()
-    db.refresh(new_doc)
-
-    # 4. Save with a sanitized filename to prevent path traversal
+    # 3. Save with a sanitized filename to prevent path traversal
     safe_name = sanitize_filename(file.filename)
     file_location = os.path.join("./uploads", safe_name)
     with open(file_location, "wb") as file_object:
         file_object.write(content)
+
+    # 4. Create the database record with the safe physical filename
+    new_doc = Document(filename=safe_name, content_type=file.content_type)
+    db.add(new_doc)
+    db.commit()
+    db.refresh(new_doc)
 
     # 5. Publish the event to Kafka
     publish_document_event(new_doc.id)

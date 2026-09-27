@@ -9,4 +9,6 @@ sentence-transformers
 python-multipart
 PyJWT
 passlib
+bcrypt
+email-validator
 numpy<2.0.0

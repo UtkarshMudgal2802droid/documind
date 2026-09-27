@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { LogOut, Zap } from 'lucide-react';
 import { DocumentUpload } from './components/DocumentUpload';
 import { DocumentSearch } from './components/DocumentSearch';
@@ -21,6 +21,10 @@ const App: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem(TOKEN_KEY);
     setIsAuthenticated(false);
+    toast.success('Signed out successfully. See you next time!', {
+      icon: '👋',
+      duration: 3000,
+    });
   };
 
   return (
@@ -31,17 +35,25 @@ const App: React.FC = () => {
           duration: 4000,
           style: {
             background: '#ffffff',
-            color: '#111118',
-            border: '1px solid #e8e8ee',
-            borderRadius: '8px',
-            fontSize: '0.82rem',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            color: '#1e1b4b',
+            border: '1px solid #e2e5f0',
+            borderRadius: '12px',
+            fontSize: '0.85rem',
+            fontWeight: 500,
+            boxShadow: '0 8px 24px rgba(99, 102, 241, 0.1), 0 2px 6px rgba(0,0,0,0.04)',
+            padding: '12px 16px',
           },
           success: {
-            iconTheme: { primary: '#16a34a', secondary: '#fff' },
+            iconTheme: { primary: '#059669', secondary: '#fff' },
+            style: {
+              border: '1px solid rgba(5, 150, 105, 0.15)',
+            },
           },
           error: {
             iconTheme: { primary: '#dc2626', secondary: '#fff' },
+            style: {
+              border: '1px solid rgba(220, 38, 38, 0.15)',
+            },
           },
         }}
       />

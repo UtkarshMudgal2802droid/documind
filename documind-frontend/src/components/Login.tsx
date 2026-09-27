@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, User, Eye, EyeOff, AlertCircle, ArrowRight, Sparkles, Shield, Zap } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { documentService } from '../services/api';
 
 interface LoginProps {
@@ -30,11 +31,19 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       setErrorMsg('');
       await documentService.login(username.trim(), password);
       setStatus('idle');
+      toast.success('Welcome back! Signed in successfully.', {
+        icon: '🎉',
+        duration: 3000,
+      });
       onLoginSuccess();
     } catch (err: any) {
       setStatus('error');
-      const msg = err.response?.data?.detail || err.message || 'Unknown error';
-      setErrorMsg(msg);
+      const detail = err.response?.data?.detail || err.message || 'Something went wrong. Please try again.';
+      setErrorMsg(detail);
+      toast.error(detail, {
+        duration: 5000,
+        icon: '⚠️',
+      });
     }
   };
 

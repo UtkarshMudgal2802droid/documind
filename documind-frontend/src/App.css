@@ -154,20 +154,20 @@
 
 /* ---- Cards ---- */
 .card {
-  background: var(--bg-card);
-  backdrop-filter: var(--blur-md);
-  -webkit-backdrop-filter: var(--blur-md);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(17, 24, 39, 0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-xl);
-  padding: 2rem;
+  padding: 2.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   transition: all var(--transition-base);
 }
 
 .card:hover {
-  border-color: var(--border-accent);
-  box-shadow: var(--shadow-md);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
 }
 
 .card-header {
@@ -503,11 +503,13 @@
 .login-card {
   width: 100%;
   max-width: 440px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-xl);
   padding: 3.5rem 3rem;
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .login-logo {

@@ -10,9 +10,9 @@ import uuid
 
 from app.core.config import settings
 from app.db.session import get_db
-from app.db.models import Document
+from app.db.models import Document, User, UserRole
 from app.kafka.producer import publish_document_event
-from app.core.security import create_access_token, verify_jwt_token
+from app.core.security import create_access_token, verify_jwt_token, get_password_hash, verify_password
 from app.db.session import engine, Base
 from sqlalchemy import text
 
@@ -45,6 +45,22 @@ async def startup_event():
             conn.execute(text('CREATE EXTENSION IF NOT EXISTS vector'))
             conn.commit()
         Base.metadata.create_all(bind=engine)
+        
+        # Auto-seed the initial admin user if the database is empty
+        from app.db.session import SessionLocal
+        db = SessionLocal()
+        if not db.query(User).first():
+            print("No users found. Creating initial admin user...")
+            admin_user = User(
+                username=settings.ADMIN_USERNAME,
+                email="admin@documind.ai",
+                hashed_password=get_password_hash(settings.ADMIN_PASSWORD),
+                role=UserRole.ADMIN
+            )
+            db.add(admin_user)
+            db.commit()
+        db.close()
+        
         print("Database tables initialized successfully.")
     except Exception as e:
         print(f"Error initializing database: {e}")
@@ -172,13 +188,43 @@ def search_documents(
 
 
 @app.post("/token")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    """Authenticates admin user and returns a JWT token."""
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Authenticates a user against the database and returns a JWT token."""
     if not form_data.username or not form_data.password:
         raise HTTPException(status_code=400, detail="Username and password are required.")
 
-    if form_data.username == settings.ADMIN_USERNAME and form_data.password == settings.ADMIN_PASSWORD:
-        access_token = create_access_token(data={"sub": form_data.username})
-        return {"access_token": access_token, "token_type": "bearer"}
+    user = db.query(User).filter(User.username == form_data.username).first()
+    
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+    if user.is_active != "true":
+        raise HTTPException(status_code=403, detail="Account is disabled")
 
-    raise HTTPException(status_code=401, detail="Invalid credentials")
+    access_token = create_access_token(data={"sub": user.username})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+from pydantic import BaseModel, EmailStr
+
+class UserCreate(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+
+@app.post("/users/register")
+def register_user(user: UserCreate, db: Session = Depends(get_db)):
+    """Registers a new user in the database."""
+    if db.query(User).filter(User.username == user.username).first():
+        raise HTTPException(status_code=400, detail="Username already registered")
+    if db.query(User).filter(User.email == user.email).first():
+        raise HTTPException(status_code=400, detail="Email already registered")
+        
+    new_user = User(
+        username=user.username,
+        email=user.email,
+        hashed_password=get_password_hash(user.password)
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return {"message": "User created successfully", "username": new_user.username}

@@ -9,27 +9,32 @@
 :root {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
-  /* Elegant SaaS Light Mode (Apple/Stripe/Vercel Inspired) */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-card: #ffffff;
-  --bg-card-hover: #ffffff;
-  --bg-input: #f3f4f6;
-  --bg-input-focus: #ffffff;
-  --border-primary: #e5e7eb;
-  --border-accent: #d1d5db;
-  --border-focus: #2563eb;
+  /* Ultra-Premium Glassmorphic Aesthetics */
+  --bg-primary: #0a0f1c; /* Deep rich dark background */
+  --bg-secondary: #111827;
+  --bg-card: rgba(255, 255, 255, 0.03); /* Frosted glass */
+  --bg-card-hover: rgba(255, 255, 255, 0.05);
+  --bg-input: rgba(0, 0, 0, 0.2);
+  --bg-input-focus: rgba(255, 255, 255, 0.05);
+  --border-primary: rgba(255, 255, 255, 0.1);
+  --border-accent: rgba(255, 255, 255, 0.2);
+  --border-focus: #60a5fa;
   
-  --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --text-muted: #6b7280;
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
   --text-on-accent: #ffffff;
   
-  /* Elegant Blue Theme */
-  --accent-blue: #2563eb;
-  --accent-blue-light: #3b82f6;
-  --accent-blue-glow: rgba(37, 99, 235, 0.05);
-  --accent-blue-solid: rgba(37, 99, 235, 0.1);
+  /* Spectacular Gradient Theme */
+  --accent-blue: #3b82f6;
+  --accent-blue-light: #60a5fa;
+  --accent-purple: #8b5cf6;
+  --accent-pink: #ec4899;
+  
+  --accent-gradient: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+  
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
   
   --accent-green: #059669;
   --accent-red: #dc2626;
@@ -62,27 +67,31 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background: var(--bg-primary);
+  background-color: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
-  line-height: 1.6;
+  position: relative;
   overflow-x: hidden;
 }
 
-/* Elegant, clean gradient background (Not too dynamic, trustworthy feel) */
+/* Stunning Animated Mesh Background */
 body::before {
   content: '';
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(37, 99, 235, 0.04) 0%, transparent 50%);
-  background-color: var(--bg-secondary);
-  pointer-events: none;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%),
+    radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.1), transparent 30%);
   z-index: -1;
+  filter: blur(80px);
+  animation: bg-shift 20s ease-in-out infinite alternate;
+}
+
+@keyframes bg-shift {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1) translate(2%, 2%); }
+  100% { transform: scale(1) translate(-2%, -2%); }
 }
 
 @keyframes mesh-rotate {

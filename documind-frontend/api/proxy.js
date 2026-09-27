@@ -10,7 +10,8 @@ export const config = {
 
 export default function handler(req, res) {
   const path = req.url.replace(/^\/api\/?/, '');
-  const backendBase = process.env.BACKEND_API_URL || 'http://127.0.0.1:8000';
+  // Default to the EC2 server IP in case the Vercel environment variable isn't set yet
+  const backendBase = process.env.BACKEND_API_URL || 'http://13.61.187.63';
   const targetUrl = new URL(`${backendBase}/${path}`);
   
   const options = {

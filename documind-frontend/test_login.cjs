@@ -12,8 +12,8 @@ const puppeteer = require('puppeteer');
 
   await page.goto('https://documind-frontend-three.vercel.app/');
   
-  await page.type('input[type="text"]', 'utkarsh_admin');
-  await page.type('input[type="password"]', 'backend_auth_2026');
+  await page.type('input[type="text"]', process.env.ADMIN_USERNAME || 'admin');
+  await page.type('input[type="password"]', process.env.ADMIN_PASSWORD || 'password');
   
   await Promise.all([
     page.click('button[type="submit"]'),

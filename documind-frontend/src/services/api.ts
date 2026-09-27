@@ -53,7 +53,7 @@ export const documentService = {
         return response.data;
     },
 
-    uploadDocument: async (file: File): Promise<UploadResponse> => {
+    uploadDocument: async (file: File, onProgress?: (progress: number) => void): Promise<UploadResponse> => {
         const formData = new FormData();
         formData.append('file', file);
 
@@ -62,6 +62,12 @@ export const documentService = {
                 'Content-Type': 'multipart/form-data',
                 'Authorization': `Bearer ${getAuthToken()}`
             },
+            onUploadProgress: (progressEvent) => {
+                if (progressEvent.total && onProgress) {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    onProgress(percentCompleted);
+                }
+            }
         });
         return response.data;
     },

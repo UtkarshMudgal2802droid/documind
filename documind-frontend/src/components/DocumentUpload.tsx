@@ -13,7 +13,7 @@ const ALLOWED_EXTENSIONS = ['.pdf', '.txt'];
 export const DocumentUpload: React.FC = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const [progress, setProgress] = useState(0);
   const [uploadComplete, setUploadComplete] = useState(false);
 
   const validateFile = (file: File): string | null => {
@@ -70,16 +70,20 @@ export const DocumentUpload: React.FC = () => {
 
     setIsUploading(true);
     setUploadComplete(false);
-    setProgress({ current: 0, total: files.length });
+    setProgress(0);
 
     let successCount = 0;
     let failCount = 0;
 
     for (let i = 0; i < files.length; i++) {
       try {
-        await documentService.uploadDocument(files[i]);
+        await documentService.uploadDocument(files[i], (percent) => {
+          // If uploading multiple files, scale the percentage to the total progress
+          const baseProgress = (i / files.length) * 100;
+          const fileProgress = (percent / files.length);
+          setProgress(Math.round(baseProgress + fileProgress));
+        });
         successCount++;
-        setProgress({ current: i + 1, total: files.length });
       } catch (err: unknown) {
         failCount++;
         const message = err instanceof Error ? err.message : 'Upload failed';
@@ -165,12 +169,13 @@ export const DocumentUpload: React.FC = () => {
             <motion.div
               className="progress-bar-fill"
               initial={{ width: 0 }}
-              animate={{ width: `${(progress.current / progress.total) * 100}%` }}
+              animate={{ width: `${progress}%` }}
+              transition={{ ease: "linear", duration: 0.1 }}
             />
           </div>
           <div className="progress-text">
-            <span>Uploading {progress.current} of {progress.total}...</span>
-            <span>{Math.round((progress.current / progress.total) * 100)}%</span>
+            <span>Uploading...</span>
+            <span>{progress}%</span>
           </div>
         </div>
       )}

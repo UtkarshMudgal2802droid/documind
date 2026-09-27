@@ -6,9 +6,11 @@ export const config = {
 
 export default async function handler(req, res) {
   // Extract path from the URL. e.g. /api/documents/upload -> documents/upload
-  // Note: req.url in Vercel sometimes includes the query string, we'll keep it.
   const path = req.url.replace(/^\/api\/?/, '');
-  const targetUrl = `http://13.61.187.63/${path}`;
+  
+  // Use environment variable for backend URL, default to local dev if missing
+  const backendBase = process.env.BACKEND_API_URL || 'http://127.0.0.1:8000';
+  const targetUrl = `${backendBase}/${path}`;
   
   try {
     const fetchOptions = {
@@ -16,9 +18,12 @@ export default async function handler(req, res) {
       headers: { ...req.headers },
     };
 
-    // Forward the host header properly
-    fetchOptions.headers['host'] = '13.61.187.63';
-    fetchOptions.headers['x-forwarded-host'] = req.headers.host;
+    // Delete forbidden headers before passing to fetch
+    delete fetchOptions.headers['host'];
+    delete fetchOptions.headers['connection'];
+    delete fetchOptions.headers['content-length'];
+    
+    fetchOptions.headers['x-forwarded-host'] = req.headers.host || req.headers['x-forwarded-host'];
 
     // Pipe the raw body stream if it's a POST/PUT/PATCH
     if (req.method !== 'GET' && req.method !== 'HEAD') {

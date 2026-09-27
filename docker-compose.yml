@@ -46,6 +46,7 @@ services:
 
   # FastAPI Backend Service
   fastapi-api:
+    image: 733850978338.dkr.ecr.eu-north-1.amazonaws.com/documind-backend:latest
     build: 
       context: ./fastapi-ai-worker
     container_name: documind-api
@@ -70,6 +71,7 @@ services:
 
   # Kafka Background Worker Service
   kafka-worker:
+    image: 733850978338.dkr.ecr.eu-north-1.amazonaws.com/documind-backend:latest
     build: 
       context: ./fastapi-ai-worker
     container_name: documind-worker

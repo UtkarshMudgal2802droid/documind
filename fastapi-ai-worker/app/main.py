@@ -13,6 +13,8 @@ from app.db.session import get_db
 from app.db.models import Document
 from app.kafka.producer import publish_document_event
 from app.core.security import create_access_token, verify_jwt_token
+from app.db.session import engine, Base
+from sqlalchemy import text
 
 # --- Constants ---
 ALLOWED_EXTENSIONS = {".pdf", ".txt"}
@@ -35,6 +37,17 @@ app.add_middleware(
 print("Loading AI Model for Semantic Search...")
 search_model = SentenceTransformer('all-MiniLM-L6-v2')
 
+@app.on_event("startup")
+async def startup_event():
+    """Ensure database tables and extensions are created on startup."""
+    try:
+        with engine.connect() as conn:
+            conn.execute(text('CREATE EXTENSION IF NOT EXISTS vector'))
+            conn.commit()
+        Base.metadata.create_all(bind=engine)
+        print("Database tables initialized successfully.")
+    except Exception as e:
+        print(f"Error initializing database: {e}")
 
 # --- Validation Helpers ---
 def validate_file(file: UploadFile) -> None:

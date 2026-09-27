@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Lock, User, Eye, EyeOff, ShieldCheck, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Lock, User, Eye, EyeOff, AlertCircle, ArrowRight, Sparkles, Shield, Zap, XCircle, CheckCircle } from 'lucide-react';
 import { documentService } from '../services/api';
 
 interface LoginProps {
@@ -14,6 +14,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [touched, setTouched] = useState({ username: false, password: false });
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const usernameError = touched.username && !username.trim() ? 'Username is required' : '';
   const passwordError = touched.password && !password.trim() ? 'Password is required' : '';
@@ -30,46 +32,63 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       setErrorMsg('');
       await documentService.login(username.trim(), password);
       setStatus('idle');
-      onLoginSuccess();
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        onLoginSuccess();
+      }, 2000);
     } catch (err: any) {
       setStatus('error');
-      const msg = err.response?.data?.detail || err.message || 'Unknown error';
-      setErrorMsg(`Failed: ${msg}`);
+      const detail = err.response?.data?.detail || err.message || 'Something went wrong. Please try again.';
+      setErrorMsg(detail);
+      setShowErrorModal(true);
     }
   };
 
   return (
-    <div className="login-wrapper" style={{ display: 'flex', minHeight: '100vh', padding: 0, backgroundColor: '#ffffff' }}>
-      
-      {/* Left side: The Form */}
-      <div style={{ flex: '1 1 50%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+    <div className="login-wrapper" style={{ display: 'flex', minHeight: '100vh', padding: 0, background: '#f8f9fc' }}>
+
+      {/* Left side: Login Form */}
+      <div style={{
+        flex: '1 1 50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '2rem', background: '#ffffff',
+      }}>
         <motion.div
           style={{ width: '100%', maxWidth: '400px' }}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
         >
+          {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2.5rem' }}>
-            <div style={{ width: '32px', height: '32px', backgroundColor: '#000000', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: '0.7rem' }}>
+            <div style={{
+              width: '36px', height: '36px',
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '-0.5px',
+              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)',
+            }}>
               DM
             </div>
-            <span style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.5px', color: '#111827' }}>
-              DocuMind.ai
+            <span style={{ fontSize: '1.2rem', fontWeight: 700, letterSpacing: '-0.5px', color: '#1e1b4b' }}>
+              DocuMind<span style={{ color: '#6366f1' }}>.ai</span>
             </span>
           </div>
 
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-1px', color: '#111827', marginBottom: '0.5rem' }}>
-            Log in to your account
+          {/* Heading */}
+          <h1 style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-1px', color: '#1e1b4b', marginBottom: '0.5rem', lineHeight: 1.2 }}>
+            Welcome back
           </h1>
-          <p style={{ color: '#6b7280', marginBottom: '2.5rem', fontSize: '0.95rem' }}>
-            Welcome back! Please enter your details.
+          <p style={{ color: '#64748b', marginBottom: '2rem', fontSize: '0.95rem', lineHeight: 1.5 }}>
+            Sign in to your DocuMind workspace to continue.
           </p>
 
           <form className="login-form" onSubmit={handleLogin} noValidate>
+            {/* Username */}
             <div className="input-group">
-              <label className="input-label" htmlFor="login-username" style={{ fontWeight: 600, color: '#374151' }}>Username</label>
+              <label className="input-label" htmlFor="login-username" style={{ fontWeight: 600, color: '#334155', fontSize: '0.8rem', marginBottom: '0.4rem' }}>Username</label>
               <div style={{ position: 'relative' }}>
-                <User size={15} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+                <User size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                 <input
                   id="login-username"
                   className={`input ${usernameError ? 'input-error' : ''}`}
@@ -79,21 +98,26 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   onBlur={() => setTouched((t) => ({ ...t, username: true }))}
                   placeholder="Enter your username"
                   autoComplete="username"
-                  style={{ paddingLeft: '2.25rem', backgroundColor: '#ffffff', border: '1px solid #d1d5db', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                  style={{
+                    paddingLeft: '2.5rem', backgroundColor: '#f8f9fc', border: '1.5px solid #e2e5f0',
+                    borderRadius: '10px', fontSize: '0.9rem', padding: '0.8rem 1rem 0.8rem 2.5rem',
+                    transition: 'all 0.2s ease', color: '#1e1b4b',
+                  }}
                 />
               </div>
               {usernameError && (
-                <div className="input-error-msg" style={{ color: '#dc2626' }}>
+                <div className="input-error-msg" style={{ color: '#dc2626', marginTop: '0.35rem', fontSize: '0.75rem' }}>
                   <AlertCircle size={12} />
                   {usernameError}
                 </div>
               )}
             </div>
 
+            {/* Password */}
             <div className="input-group">
-              <label className="input-label" htmlFor="login-password" style={{ fontWeight: 600, color: '#374151' }}>Password</label>
+              <label className="input-label" htmlFor="login-password" style={{ fontWeight: 600, color: '#334155', fontSize: '0.8rem', marginBottom: '0.4rem' }}>Password</label>
               <div className="input-password">
-                <Lock size={15} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', zIndex: 1 }} />
+                <Lock size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', zIndex: 1 }} />
                 <input
                   id="login-password"
                   className={`input ${passwordError ? 'input-error' : ''}`}
@@ -103,32 +127,45 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   onBlur={() => setTouched((t) => ({ ...t, password: true }))}
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  style={{ paddingLeft: '2.25rem', backgroundColor: '#ffffff', border: '1px solid #d1d5db', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                  style={{
+                    paddingLeft: '2.5rem', backgroundColor: '#f8f9fc', border: '1.5px solid #e2e5f0',
+                    borderRadius: '10px', fontSize: '0.9rem', padding: '0.8rem 2.5rem 0.8rem 2.5rem',
+                    transition: 'all 0.2s ease', color: '#1e1b4b',
+                  }}
                 />
                 <button
                   type="button"
                   className="input-password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  style={{ color: '#6b7280' }}
+                  style={{ color: '#94a3b8' }}
                 >
-                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
               {passwordError && (
-                <div className="input-error-msg" style={{ color: '#dc2626' }}>
+                <div className="input-error-msg" style={{ color: '#dc2626', marginTop: '0.35rem', fontSize: '0.75rem' }}>
                   <AlertCircle size={12} />
                   {passwordError}
                 </div>
               )}
             </div>
 
+            {/* Submit */}
             <motion.button
               type="submit"
               className="btn btn-full btn-lg"
               disabled={status === 'loading'}
+              whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              style={{ marginTop: '1rem', backgroundColor: '#000000', color: '#ffffff', borderRadius: '8px', fontWeight: 600 }}
+              style={{
+                marginTop: '0.75rem',
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                color: '#ffffff', borderRadius: '10px', fontWeight: 600, fontSize: '0.9rem',
+                boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
+                border: 'none', cursor: 'pointer', padding: '0.85rem 1.5rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+              }}
             >
               {status === 'loading' ? (
                 <>
@@ -136,45 +173,213 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   Signing in...
                 </>
               ) : (
-                'Sign In'
+                <>
+                  Sign In
+                  <ArrowRight size={16} />
+                </>
               )}
             </motion.button>
 
-            {status === 'error' && (
-              <motion.div
-                className="status-msg status-msg--error"
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: '8px', marginTop: '1rem' }}
-              >
-                <AlertCircle size={14} />
-                {errorMsg.replace('Failed: ', '')}
-              </motion.div>
-            )}
-          </form>
-        </motion.div>
-      </div>
 
-      {/* Right side: The Branding Splash */}
-      <div style={{ flex: '1 1 50%', backgroundColor: '#0a0a0a', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '4rem' }} className="login-splash-pane">
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'radial-gradient(circle at 30% 70%, rgba(255,255,255,0.08) 0%, transparent 50%)' }} />
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 40%)' }} />
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          style={{ position: 'relative', zIndex: 10, maxWidth: '500px', margin: '0 auto' }}
-        >
-          <div style={{ color: '#a3a3a3', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', fontSize: '0.8rem', marginBottom: '1.5rem' }}>Enterprise AI</div>
-          <h2 style={{ color: '#ffffff', fontSize: '3rem', fontWeight: 700, lineHeight: 1.1, letterSpacing: '-1px', marginBottom: '1.5rem' }}>
-            Transform documents into intelligent answers.
-          </h2>
-          <p style={{ color: '#737373', fontSize: '1.1rem', lineHeight: 1.6 }}>
-            The fastest, most secure way to extract knowledge from your organization's unstructured data using state-of-the-art vector search.
+          </form>
+
+          {/* Footer */}
+          <p style={{ marginTop: '2rem', fontSize: '0.78rem', color: '#94a3b8', textAlign: 'center' }}>
+            Secured by enterprise-grade encryption
           </p>
         </motion.div>
       </div>
+
+      {/* Right side: Premium Gradient Splash */}
+      <div
+        className="login-splash-pane"
+        style={{
+          flex: '1 1 50%',
+          background: 'linear-gradient(145deg, #312e81 0%, #4338ca 25%, #6366f1 55%, #818cf8 100%)',
+          position: 'relative', overflow: 'hidden',
+          display: 'flex', flexDirection: 'column', justifyContent: 'center',
+          padding: '4rem',
+        }}
+      >
+        {/* Decorative orbs */}
+        <div style={{
+          position: 'absolute', width: '400px', height: '400px', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 65%)',
+          top: '-100px', right: '-100px',
+        }} />
+        <div style={{
+          position: 'absolute', width: '300px', height: '300px', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%)',
+          bottom: '-50px', left: '-50px',
+        }} />
+        <div style={{
+          position: 'absolute', width: '200px', height: '200px', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(167,139,250,0.3) 0%, transparent 60%)',
+          top: '40%', left: '30%',
+        }} />
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+          style={{ position: 'relative', zIndex: 10, maxWidth: '480px' }}
+        >
+          <div style={{
+            color: 'rgba(255,255,255,0.7)', fontWeight: 600, letterSpacing: '2.5px',
+            textTransform: 'uppercase', fontSize: '0.72rem', marginBottom: '1.5rem',
+          }}>
+            Enterprise AI Platform
+          </div>
+          <h2 style={{
+            color: '#ffffff', fontSize: '2.8rem', fontWeight: 800, lineHeight: 1.1,
+            letterSpacing: '-1.5px', marginBottom: '1.5rem',
+          }}>
+            Transform documents into intelligent answers.
+          </h2>
+          <p style={{
+            color: 'rgba(255,255,255,0.75)', fontSize: '1.05rem', lineHeight: 1.7,
+            marginBottom: '2.5rem',
+          }}>
+            The fastest, most secure way to extract knowledge from your organization's unstructured data using state-of-the-art vector search.
+          </p>
+
+          {/* Feature pills */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem' }}>
+            {[
+              { icon: <Sparkles size={13} />, label: 'AI-Powered Search' },
+              { icon: <Shield size={13} />, label: 'Enterprise Security' },
+              { icon: <Zap size={13} />, label: 'Real-time Processing' },
+            ].map((item) => (
+              <div
+                key={item.label}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.4rem 0.85rem', borderRadius: '100px',
+                  backgroundColor: 'rgba(255,255,255,0.12)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  color: '#ffffff', fontSize: '0.75rem', fontWeight: 500,
+                  backdropFilter: 'blur(8px)',
+                }}
+              >
+                {item.icon}
+                {item.label}
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Error Modal Popup */}
+      <AnimatePresence>
+        {showErrorModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 9999, padding: '1rem',
+            }}
+            onClick={() => setShowErrorModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 15 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#ffffff', borderRadius: '16px', padding: '2rem 2rem 1.75rem',
+                maxWidth: '340px', width: '100%', textAlign: 'center',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.06)',
+              }}
+            >
+              <div style={{
+                width: '56px', height: '56px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 1rem',
+              }}>
+                <XCircle size={28} color="#dc2626" />
+              </div>
+
+              <p style={{
+                fontSize: '0.95rem', color: '#1e1b4b', lineHeight: 1.5,
+                marginBottom: '1.5rem', fontWeight: 500,
+              }}>
+                {errorMsg}
+              </p>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setShowErrorModal(false)}
+                style={{
+                  width: '100%', padding: '0.7rem 1.5rem',
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  color: '#ffffff', border: 'none', borderRadius: '10px',
+                  fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(99, 102, 241, 0.3)',
+                }}
+              >
+                OK
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Success Modal Popup */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 9999, padding: '1rem',
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 15 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              style={{
+                background: '#ffffff', borderRadius: '16px', padding: '2rem 2rem 1.75rem',
+                maxWidth: '340px', width: '100%', textAlign: 'center',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.06)',
+              }}
+            >
+              <div style={{
+                width: '56px', height: '56px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 1rem',
+              }}>
+                <CheckCircle size={28} color="#059669" />
+              </div>
+
+              <p style={{
+                fontSize: '1.05rem', color: '#1e1b4b', lineHeight: 1.5,
+                fontWeight: 600, marginBottom: '0.3rem',
+              }}>
+                Welcome, {username}!
+              </p>
+              <p style={{ fontSize: '0.82rem', color: '#64748b' }}>
+                Signing you in...
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

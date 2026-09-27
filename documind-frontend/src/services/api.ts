@@ -22,10 +22,12 @@ const getAuthToken = () => {
 };
 
 // Intercept 401 responses globally to handle token expiration
+// IMPORTANT: Skip the /token endpoint so login errors are shown properly
 apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        const requestUrl = error.config?.url || '';
+        if (error.response?.status === 401 && !requestUrl.includes('/token')) {
             localStorage.removeItem(TOKEN_KEY);
             window.location.reload();
         }

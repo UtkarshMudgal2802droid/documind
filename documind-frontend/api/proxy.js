@@ -1,5 +1,4 @@
 import http from 'http';
-import https from 'https';
 
 export const config = {
   api: {
@@ -9,34 +8,41 @@ export const config = {
 };
 
 export default function handler(req, res) {
-  const path = req.url.replace(/^\/api\/?/, '');
-  // Default to the EC2 server IP in case the Vercel environment variable isn't set yet
-  const backendBase = process.env.BACKEND_API_URL || 'http://13.61.187.63';
-  const targetUrl = new URL(`${backendBase}/${path}`);
+  const backendUrl = process.env.BACKEND_API_URL;
   
+  if (!backendUrl) {
+    res.status(500).json({ error: "Missing BACKEND_API_URL secret" });
+    return;
+  }
+
+  // Clean the URL just in case there are http:// or trailing slashes
+  const cleanBackendUrl = backendUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  
+  // Remove the /api prefix so it matches the backend routes (e.g. /token)
+  const path = req.url.replace(/^\/api/, '');
+
   const options = {
-    hostname: targetUrl.hostname,
-    port: targetUrl.port || (targetUrl.protocol === 'https:' ? 443 : 80),
-    path: targetUrl.pathname + targetUrl.search,
+    hostname: cleanBackendUrl,
+    port: 80,
+    path: path,
     method: req.method,
-    headers: { ...req.headers },
+    headers: {
+      ...req.headers,
+      // CRITICAL: Override the Host header so AWS doesn't drop the connection!
+      host: cleanBackendUrl,
+    }
   };
 
-  // Delete forbidden headers
-  delete options.headers.host;
-  options.headers['x-forwarded-host'] = req.headers.host;
-
-  const client = targetUrl.protocol === 'https:' ? https : http;
-
-  const proxyReq = client.request(options, (proxyRes) => {
+  const proxyReq = http.request(options, (proxyRes) => {
     res.writeHead(proxyRes.statusCode, proxyRes.headers);
     proxyRes.pipe(res, { end: true });
   });
 
   proxyReq.on('error', (err) => {
-    res.status(500).json({ error: 'Proxy error', details: err.message });
+    console.error('Proxy Error:', err);
+    res.status(502).json({ error: "Bad Gateway - Proxy failed to reach AWS backend." });
   });
 
-  // Pipe the request body
+  // Stream the original request directly to AWS (supports large PDF uploads!)
   req.pipe(proxyReq, { end: true });
 }

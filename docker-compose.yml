@@ -52,7 +52,7 @@ services:
     container_name: documind-api
     restart: always
     ports:
-      - "8085:8000"
+      - "80:8000"
     depends_on:
       postgres:
         condition: service_healthy

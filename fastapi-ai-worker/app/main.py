@@ -29,6 +29,13 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
 
+class ForgotPasswordRequest(BaseModel):
+    username: str
+
+class ResetPasswordRequest(BaseModel):
+    username: str
+    new_password: str
+
 os.makedirs("./uploads", exist_ok=True)
 
 app = FastAPI(title=settings.PROJECT_NAME)
@@ -233,3 +240,25 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     return {"message": "User created successfully", "username": new_user.username}
+
+@app.post("/users/forgot-password")
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Mocks sending a password reset email to the user."""
+    user = db.query(User).filter(User.username == request.username).first()
+    if not user:
+        # Security best practice: Don't reveal if a user exists or not
+        return {"message": "If that username exists, a password reset link has been sent to their registered email."}
+    
+    # In a real app, generate a unique token and send an email here via SMTP/SendGrid.
+    return {"message": "If that username exists, a password reset link has been sent to their registered email."}
+
+@app.post("/users/reset-password")
+def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Resets the user's password (Mock implementation without email token validation)."""
+    user = db.query(User).filter(User.username == request.username).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid request")
+        
+    user.hashed_password = get_password_hash(request.new_password)
+    db.commit()
+    return {"message": "Password has been reset successfully. You can now log in."}

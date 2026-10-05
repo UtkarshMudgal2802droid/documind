@@ -128,5 +128,24 @@ export const documentService = {
             }
         });
         return response.data;
+    },
+
+    forgotPassword: async (username: string): Promise<{ message: string }> => {
+        if (!username.trim()) throw new Error("Username is required.");
+        
+        const response = await apiClient.post<{ message: string }>('/users/forgot-password', {
+            username: username.trim()
+        });
+        return response.data;
+    },
+
+    resetPassword: async (username: string, new_password: string): Promise<{ message: string }> => {
+        if (!username.trim() || !new_password.trim()) throw new Error("Username and new password are required.");
+        
+        const response = await apiClient.post<{ message: string }>('/users/reset-password', {
+            username: username.trim(),
+            new_password: new_password
+        });
+        return response.data;
     }
 };

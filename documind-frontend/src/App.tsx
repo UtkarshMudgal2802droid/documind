@@ -40,7 +40,16 @@ const App: React.FC = () => {
       // Automatically log them out of this local session as well
       handleLogout();
     } catch (err: any) {
-      const detail = err.response?.data?.detail || err.message || 'Failed to logout from all devices.';
+      let detail = 'Failed to logout from all devices.';
+      if (err.response?.data?.detail) {
+          if (Array.isArray(err.response.data.detail)) {
+              detail = err.response.data.detail[0].msg;
+          } else if (typeof err.response.data.detail === 'string') {
+              detail = err.response.data.detail;
+          }
+      } else if (err.message) {
+          detail = err.message;
+      }
       toast.error(detail);
     }
   };

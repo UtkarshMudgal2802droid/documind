@@ -43,7 +43,16 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       }, 2000);
     } catch (err: any) {
       setStatus('error');
-      const detail = err.response?.data?.detail || err.message || 'Something went wrong. Please try again.';
+      let detail = 'Something went wrong. Please try again.';
+      if (err.response?.data?.detail) {
+          if (Array.isArray(err.response.data.detail)) {
+              detail = err.response.data.detail[0].msg;
+          } else if (typeof err.response.data.detail === 'string') {
+              detail = err.response.data.detail;
+          }
+      } else if (err.message) {
+          detail = err.message;
+      }
       setErrorMsg(detail);
       setShowErrorModal(true);
     }
@@ -68,7 +77,16 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       alert("Password reset successfully! You can now log in.");
     } catch (err: any) {
       setForgotStatus('idle');
-      const detail = err.response?.data?.detail || err.message || 'Failed to reset password. Please try again.';
+      let detail = 'Failed to reset password. Please try again.';
+      if (err.response?.data?.detail) {
+          if (Array.isArray(err.response.data.detail)) {
+              detail = err.response.data.detail[0].msg;
+          } else if (typeof err.response.data.detail === 'string') {
+              detail = err.response.data.detail;
+          }
+      } else if (err.message) {
+          detail = err.message;
+      }
       setErrorMsg(detail);
       setShowErrorModal(true);
     }

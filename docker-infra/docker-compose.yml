@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -38,6 +40,43 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # FastAPI Backend Service
+  fastapi-api:
+    image: 733850978338.dkr.ecr.eu-north-1.amazonaws.com/documind-backend:latest
+    container_name: ${PROJECT_NAME}-api
+    restart: always
+    ports:
+      - "80:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      - PROJECT_NAME=${PROJECT_NAME}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${PROJECT_NAME}-postgres:5432/${POSTGRES_DB}
+      - KAFKA_BROKER_URL=${PROJECT_NAME}-kafka:29092
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+
+  # Kafka Background Worker Service
+  kafka-worker:
+    image: 733850978338.dkr.ecr.eu-north-1.amazonaws.com/documind-backend:latest
+    container_name: ${PROJECT_NAME}-worker
+    restart: always
+    command: ["python", "-m", "app.kafka.consumer"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      - PROJECT_NAME=${PROJECT_NAME}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${PROJECT_NAME}-postgres:5432/${POSTGRES_DB}
+      - KAFKA_BROKER_URL=${PROJECT_NAME}-kafka:29092
 
 volumes:
   postgres_data:

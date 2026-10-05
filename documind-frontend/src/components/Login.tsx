@@ -17,14 +17,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
-  const [showLogoutAllModal, setShowLogoutAllModal] = useState(false);
   const [forgotUsername, setForgotUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [forgotStatus, setForgotStatus] = useState<'idle' | 'loading'>('idle');
-  const [logoutAllUsername, setLogoutAllUsername] = useState('');
-  const [logoutAllPassword, setLogoutAllPassword] = useState('');
-  const [logoutAllStatus, setLogoutAllStatus] = useState<'idle' | 'loading'>('idle');
   const usernameError = touched.username && !username.trim() ? 'Username is required' : '';
   const passwordError = touched.password && !password.trim() ? 'Password is required' : '';
   const isFormValid = username.trim().length > 0 && password.trim().length > 0;
@@ -73,30 +69,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     } catch (err: any) {
       setForgotStatus('idle');
       const detail = err.response?.data?.detail || err.message || 'Failed to reset password. Please try again.';
-      setErrorMsg(detail);
-      setShowErrorModal(true);
-    }
-  };
-
-  const handleLogoutAll = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!logoutAllUsername.trim() || !logoutAllPassword.trim()) {
-       setErrorMsg('Username and password are required to confirm logout.');
-       setShowErrorModal(true);
-       return;
-    }
-
-    try {
-      setLogoutAllStatus('loading');
-      await documentService.logoutAllDevices(logoutAllUsername.trim(), logoutAllPassword);
-      setLogoutAllStatus('idle');
-      setShowLogoutAllModal(false);
-      setLogoutAllUsername('');
-      setLogoutAllPassword('');
-      alert("Success! You have been securely logged out from all devices globally.");
-    } catch (err: any) {
-      setLogoutAllStatus('idle');
-      const detail = err.response?.data?.detail || err.message || 'Failed to logout. Please check credentials.';
       setErrorMsg(detail);
       setShowErrorModal(true);
     }
@@ -248,13 +220,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             <p style={{ fontSize: '0.78rem', color: '#94a3b8', marginBottom: '0.5rem' }}>
               Secured by enterprise-grade encryption
             </p>
-            <button 
-              type="button" 
-              onClick={() => setShowLogoutAllModal(true)}
-              style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
-            >
-              Sign out from all devices globally
-            </button>
           </div>
         </motion.div>
       </div>
@@ -542,93 +507,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     }}
                   >
                     {forgotStatus === 'loading' ? 'Saving...' : 'Reset'}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Logout All Devices Modal Popup */}
-      <AnimatePresence>
-        {showLogoutAllModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            style={{
-              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              zIndex: 9999, padding: '1rem', backdropFilter: 'blur(4px)'
-            }}
-            onClick={() => setShowLogoutAllModal(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 15 }}
-              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                background: '#ffffff', borderRadius: '16px', padding: '2rem',
-                maxWidth: '380px', width: '100%',
-                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.06)',
-              }}
-            >
-              <h3 style={{ margin: '0 0 0.5rem 0', color: '#1e1b4b', fontSize: '1.2rem' }}>Global Sign Out</h3>
-              <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Verify your credentials to instantly terminate your active sessions on all devices.</p>
-              
-              <form onSubmit={handleLogoutAll}>
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ display: 'block', fontWeight: 600, color: '#334155', fontSize: '0.8rem', marginBottom: '0.4rem' }}>Username</label>
-                  <input
-                    type="text"
-                    value={logoutAllUsername}
-                    onChange={(e) => setLogoutAllUsername(e.target.value)}
-                    placeholder="Enter your username"
-                    style={{
-                      width: '100%', padding: '0.75rem', backgroundColor: '#f8f9fc', border: '1.5px solid #e2e5f0',
-                      borderRadius: '8px', fontSize: '0.9rem', color: '#1e1b4b', boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'block', fontWeight: 600, color: '#334155', fontSize: '0.8rem', marginBottom: '0.4rem' }}>Password</label>
-                  <input
-                    type="password"
-                    value={logoutAllPassword}
-                    onChange={(e) => setLogoutAllPassword(e.target.value)}
-                    placeholder="Enter current password"
-                    style={{
-                      width: '100%', padding: '0.75rem', backgroundColor: '#f8f9fc', border: '1.5px solid #e2e5f0',
-                      borderRadius: '8px', fontSize: '0.9rem', color: '#1e1b4b', boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-                
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowLogoutAllModal(false)}
-                    style={{
-                      flex: 1, padding: '0.75rem', background: '#f1f5f9', color: '#475569',
-                      border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer'
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={logoutAllStatus === 'loading'}
-                    style={{
-                      flex: 1, padding: '0.75rem', background: '#ef4444',
-                      color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer'
-                    }}
-                  >
-                    {logoutAllStatus === 'loading' ? 'Terminating...' : 'Sign Out All'}
                   </button>
                 </div>
               </form>

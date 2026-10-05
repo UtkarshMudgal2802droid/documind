@@ -16,7 +16,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [touched, setTouched] = useState({ username: false, password: false });
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotUsername, setForgotUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [forgotStatus, setForgotStatus] = useState<'idle' | 'loading'>('idle');
   const usernameError = touched.username && !username.trim() ? 'Username is required' : '';
   const passwordError = touched.password && !password.trim() ? 'Password is required' : '';
   const isFormValid = username.trim().length > 0 && password.trim().length > 0;
@@ -40,6 +43,30 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     } catch (err: any) {
       setStatus('error');
       const detail = err.response?.data?.detail || err.message || 'Something went wrong. Please try again.';
+      setErrorMsg(detail);
+      setShowErrorModal(true);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotUsername.trim() || !newPassword.trim()) {
+       setErrorMsg('Username and New Password are required.');
+       setShowErrorModal(true);
+       return;
+    }
+
+    try {
+      setForgotStatus('loading');
+      await documentService.resetPassword(forgotUsername.trim(), newPassword);
+      setForgotStatus('idle');
+      setShowForgotModal(false);
+      setForgotUsername('');
+      setNewPassword('');
+      alert("Password reset successfully! You can now log in.");
+    } catch (err: any) {
+      setForgotStatus('idle');
+      const detail = err.response?.data?.detail || err.message || 'Failed to reset password. Please try again.';
       setErrorMsg(detail);
       setShowErrorModal(true);
     }
@@ -115,7 +142,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
             {/* Password */}
             <div className="input-group">
-              <label className="input-label" htmlFor="login-password" style={{ fontWeight: 600, color: '#334155', fontSize: '0.8rem', marginBottom: '0.4rem' }}>Password</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <label className="input-label" htmlFor="login-password" style={{ fontWeight: 600, color: '#334155', fontSize: '0.8rem' }}>Password</label>
+                <button type="button" onClick={() => setShowForgotModal(true)} style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>Forgot Password?</button>
+              </div>
               <div className="input-password">
                 <Lock size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', zIndex: 1 }} />
                 <input
@@ -376,6 +406,93 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               <p style={{ fontSize: '0.82rem', color: '#64748b' }}>
                 Signing you in...
               </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Forgot Password Modal Popup */}
+      <AnimatePresence>
+        {showForgotModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 9999, padding: '1rem', backdropFilter: 'blur(4px)'
+            }}
+            onClick={() => setShowForgotModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 15 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#ffffff', borderRadius: '16px', padding: '2rem',
+                maxWidth: '380px', width: '100%',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.06)',
+              }}
+            >
+              <h3 style={{ margin: '0 0 0.5rem 0', color: '#1e1b4b', fontSize: '1.2rem' }}>Reset Password</h3>
+              <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Enter your username and new password to instantly reset it.</p>
+              
+              <form onSubmit={handleResetPassword}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontWeight: 600, color: '#334155', fontSize: '0.8rem', marginBottom: '0.4rem' }}>Username</label>
+                  <input
+                    type="text"
+                    value={forgotUsername}
+                    onChange={(e) => setForgotUsername(e.target.value)}
+                    placeholder="Enter your username"
+                    style={{
+                      width: '100%', padding: '0.75rem', backgroundColor: '#f8f9fc', border: '1.5px solid #e2e5f0',
+                      borderRadius: '8px', fontSize: '0.9rem', color: '#1e1b4b', boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontWeight: 600, color: '#334155', fontSize: '0.8rem', marginBottom: '0.4rem' }}>New Password</label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    style={{
+                      width: '100%', padding: '0.75rem', backgroundColor: '#f8f9fc', border: '1.5px solid #e2e5f0',
+                      borderRadius: '8px', fontSize: '0.9rem', color: '#1e1b4b', boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+                
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotModal(false)}
+                    style={{
+                      flex: 1, padding: '0.75rem', background: '#f1f5f9', color: '#475569',
+                      border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={forgotStatus === 'loading'}
+                    style={{
+                      flex: 1, padding: '0.75rem', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                      color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer'
+                    }}
+                  >
+                    {forgotStatus === 'loading' ? 'Saving...' : 'Reset'}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}

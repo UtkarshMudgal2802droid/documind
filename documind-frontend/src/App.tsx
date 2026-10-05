@@ -28,8 +28,6 @@ const App: React.FC = () => {
     setShowLogoutModal(true);
     setTimeout(() => {
       setShowLogoutModal(false);
-    setTimeout(() => {
-      setShowLogoutModal(false);
       setIsAuthenticated(false);
     }, 2000);
   };

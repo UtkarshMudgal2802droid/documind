@@ -9,11 +9,49 @@ const apiClient = axios.create({
 
 export const TOKEN_KEY = import.meta.env.VITE_PROJECT_NAME ? `${import.meta.env.VITE_PROJECT_NAME.toLowerCase()}_token` : 'app_token';
 
+// Decodes the JWT locally to check expiration time
+export const isTokenExpired = (token: string): boolean => {
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.exp * 1000 < Date.now();
+    } catch (e) {
+        return true;
+    }
+};
+
+// Sets an automatic timer to log the user out exactly when the token expires
+export const startSessionTimer = () => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) return;
+
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const timeUntilExpiry = (payload.exp * 1000) - Date.now();
+
+        if (timeUntilExpiry <= 0) {
+            localStorage.removeItem(TOKEN_KEY);
+            window.location.reload();
+        } else {
+            setTimeout(() => {
+                localStorage.removeItem(TOKEN_KEY);
+                alert("Your secure session has expired. Please log in again.");
+                window.location.reload();
+            }, timeUntilExpiry);
+        }
+    } catch (e) {
+        localStorage.removeItem(TOKEN_KEY);
+    }
+};
+
+// Call it immediately when the app boots up
+startSessionTimer();
+
 // Helper to pull the secure token from the browser session
 const getAuthToken = () => {
     const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) {
-        // Token expired or missing — force re-login
+    
+    if (!token || isTokenExpired(token)) {
+        // Token expired or missing — force re-login instantly without asking backend
         localStorage.removeItem(TOKEN_KEY);
         window.location.reload();
         throw new Error("Session expired. Redirecting to login.");
@@ -52,6 +90,10 @@ export const documentService = {
 
         // Save the token securely in the browser
         localStorage.setItem(TOKEN_KEY, response.data.access_token);
+        
+        // Start the automatic logout timer for the new session
+        startSessionTimer();
+        
         return response.data;
     },
 

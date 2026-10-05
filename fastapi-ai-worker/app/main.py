@@ -1,26 +1,33 @@
-from fastapi import Depends, FastAPI, UploadFile, File, HTTPException, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordRequestForm
-from sentence_transformers import SentenceTransformer
 import os
 import shutil
 import uuid
 
+from fastapi import Depends, FastAPI, UploadFile, File, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import BaseModel, EmailStr
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+from sentence_transformers import SentenceTransformer
+
 from app.core.config import settings
-from app.db.session import get_db
+from app.core.security import create_access_token, verify_jwt_token, get_password_hash, verify_password
+from app.db.session import get_db, engine, Base
 from app.db.models import Document, User, UserRole
 from app.kafka.producer import publish_document_event
-from app.core.security import create_access_token, verify_jwt_token, get_password_hash, verify_password
-from app.db.session import engine, Base
-from sqlalchemy import text
 
 # --- Constants ---
 ALLOWED_EXTENSIONS = {".pdf", ".txt"}
 MAX_FILE_SIZE_MB = 10
 MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 MAX_QUERY_LENGTH = 500
+
+# --- Pydantic Schemas ---
+# Schemas define the exact structure of data we expect from the frontend (Client)
+class UserCreate(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
 
 os.makedirs("./uploads", exist_ok=True)
 
@@ -207,12 +214,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
-from pydantic import BaseModel, EmailStr
 
-class UserCreate(BaseModel):
-    username: str
-    email: EmailStr
-    password: str
 
 @app.post("/users/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):

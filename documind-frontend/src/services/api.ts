@@ -141,12 +141,11 @@ export const documentService = {
         return response.data;
     },
 
-    logoutAllDevices: async (username: string, password: string): Promise<{ message: string }> => {
-        if (!username.trim() || !password.trim()) throw new Error("Username and password required to confirm logout.");
-        
-        const response = await apiClient.post<{ message: string }>('/users/logout-all', {
-            username: username.trim(),
-            password: password
+    logoutAllDevices: async (): Promise<{ message: string }> => {
+        const response = await apiClient.post<{ message: string }>('/users/logout-all', {}, {
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`
+            }
         });
         
         // Clear local token since they just logged out of everything

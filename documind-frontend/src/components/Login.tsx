@@ -255,7 +255,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             >
               Sign out from all devices globally
             </button>
-          </div>>
+          </div>
         </motion.div>
       </div>
 

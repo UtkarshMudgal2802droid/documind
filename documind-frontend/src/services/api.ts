@@ -130,22 +130,28 @@ export const documentService = {
         return response.data;
     },
 
-    forgotPassword: async (username: string): Promise<{ message: string }> => {
-        if (!username.trim()) throw new Error("Username is required.");
+    forgotPassword: async (username: string, new_password: string, confirm_password: string): Promise<{ message: string }> => {
+        if (!username.trim() || !new_password.trim() || !confirm_password.trim()) throw new Error("All fields are required.");
         
         const response = await apiClient.post<{ message: string }>('/users/forgot-password', {
-            username: username.trim()
+            username: username.trim(),
+            new_password: new_password,
+            confirm_password: confirm_password
         });
         return response.data;
     },
 
-    resetPassword: async (username: string, new_password: string): Promise<{ message: string }> => {
-        if (!username.trim() || !new_password.trim()) throw new Error("Username and new password are required.");
+    logoutAllDevices: async (username: string, password: string): Promise<{ message: string }> => {
+        if (!username.trim() || !password.trim()) throw new Error("Username and password required to confirm logout.");
         
-        const response = await apiClient.post<{ message: string }>('/users/reset-password', {
+        const response = await apiClient.post<{ message: string }>('/users/logout-all', {
             username: username.trim(),
-            new_password: new_password
+            password: password
         });
+        
+        // Clear local token since they just logged out of everything
+        localStorage.removeItem(TOKEN_KEY);
+        
         return response.data;
     }
 };

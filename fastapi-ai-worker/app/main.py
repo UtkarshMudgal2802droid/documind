@@ -31,10 +31,12 @@ class UserCreate(BaseModel):
 
 class ForgotPasswordRequest(BaseModel):
     username: str
-
-class ResetPasswordRequest(BaseModel):
-    username: str
     new_password: str
+    confirm_password: str
+
+class LogoutAllRequest(BaseModel):
+    username: str
+    password: str
 
 os.makedirs("./uploads", exist_ok=True)
 
@@ -243,22 +245,23 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
 
 @app.post("/users/forgot-password")
 def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
-    """Mocks sending a password reset email to the user."""
+    """Directly resets the user's password using username and new password."""
+    if request.new_password != request.confirm_password:
+        raise HTTPException(status_code=400, detail="Passwords do not match")
+        
     user = db.query(User).filter(User.username == request.username).first()
     if not user:
-        # Security best practice: Don't reveal if a user exists or not
-        return {"message": "If that username exists, a password reset link has been sent to their registered email."}
-    
-    # In a real app, generate a unique token and send an email here via SMTP/SendGrid.
-    return {"message": "If that username exists, a password reset link has been sent to their registered email."}
-
-@app.post("/users/reset-password")
-def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
-    """Resets the user's password (Mock implementation without email token validation)."""
-    user = db.query(User).filter(User.username == request.username).first()
-    if not user:
-        raise HTTPException(status_code=400, detail="Invalid request")
+        raise HTTPException(status_code=400, detail="Invalid username")
         
     user.hashed_password = get_password_hash(request.new_password)
     db.commit()
-    return {"message": "Password has been reset successfully. You can now log in."}
+    return {"message": "Password reset successfully. You can now log in."}
+
+@app.post("/users/logout-all")
+def logout_all_devices(request: LogoutAllRequest, db: Session = Depends(get_db)):
+    """Mocks a global logout by verifying credentials (in prod, this increments a DB token_version)."""
+    user = db.query(User).filter(User.username == request.username).first()
+    if not user or not verify_password(request.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+        
+    return {"message": "Successfully logged out from all devices."}

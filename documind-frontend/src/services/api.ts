@@ -1,6 +1,5 @@
 import axios from 'axios';
 import type { UploadResponse, SearchResponse } from '../types/document';
-import type { UploadResponse, SearchResponse } from '../types/document';
 import type { LoginResponse } from '../types/auth';
 
 export interface UserSession {

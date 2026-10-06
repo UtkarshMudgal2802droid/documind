@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { Monitor, Smartphone, Globe, LogOut, ShieldAlert } from 'lucide-react';
-import { documentService, UserSession } from '../services/api';
+import { documentService } from '../services/api';
+import type { UserSession } from '../services/api';
 
 interface DeviceManagerProps {
   onLogoutAll: () => void;

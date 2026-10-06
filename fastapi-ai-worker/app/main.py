@@ -16,7 +16,7 @@ from sentence_transformers import SentenceTransformer
 from app.core.config import settings
 from app.core.security import create_access_token, verify_jwt_token, get_password_hash, verify_password
 from app.db.session import get_db, engine, Base
-from app.db.models import Document, User, UserRole
+from app.db.models import Document, User, UserRole, UserSession
 from app.kafka.producer import publish_document_event
 
 # --- Constants ---
@@ -124,7 +124,7 @@ async def health_check(db: Session = Depends(get_db)):
 async def upload_document(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: str = Depends(verify_jwt_token)
+    token_data: dict = Depends(verify_jwt_token)
 ):
     """Receives physical files from the frontend and queues them for AI processing."""
 
@@ -168,7 +168,7 @@ async def upload_document(
 def search_documents(
     query: str = Query(..., min_length=1, max_length=MAX_QUERY_LENGTH),
     db: Session = Depends(get_db),
-    current_user: str = Depends(verify_jwt_token)
+    token_data: dict = Depends(verify_jwt_token)
 ):
     """Searches documents using AI vector similarity."""
 
@@ -225,7 +225,15 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
     if user.is_active != "true":
         raise HTTPException(status_code=403, detail="Account is disabled")
 
-    access_token = create_access_token(data={"sub": user.username})
+    device_info = request.headers.get("user-agent", "Unknown Device")
+    ip_address = request.client.host if request.client else "0.0.0.0"
+    
+    new_session = UserSession(user_id=user.id, device_info=device_info, ip_address=ip_address)
+    db.add(new_session)
+    db.commit()
+    db.refresh(new_session)
+
+    access_token = create_access_token(data={"sub": user.username, "sid": str(new_session.id)})
     return {"access_token": access_token, "token_type": "bearer"}
 
 
@@ -263,11 +271,35 @@ def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db
     return {"message": "Password reset successfully. You can now log in."}
 
 @app.post("/users/logout-all")
-def logout_all_devices(current_user: str = Depends(verify_jwt_token), db: Session = Depends(get_db)):
-    """Logs the user out of all devices by revoking their sessions globally."""
-    # Since we verified the token, we know the user is authenticated.
-    # In a full production system, we would increment their token_version in the DB here.
-    # user = db.query(User).filter(User.username == current_user).first()
-    # user.token_version += 1
-    # db.commit()
+def logout_all_devices(token_data: dict = Depends(verify_jwt_token), db: Session = Depends(get_db)):
+    """Logs the user out of all devices by revoking all their sessions globally."""
+    user = db.query(User).filter(User.username == token_data["username"]).first()
+    if user:
+        db.query(UserSession).filter(UserSession.user_id == user.id, UserSession.is_revoked == "false").update({"is_revoked": "true"})
+        db.commit()
     return {"message": "Successfully logged out from all devices."}
+
+@app.get("/users/sessions")
+def get_sessions(token_data: dict = Depends(verify_jwt_token), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == token_data["username"]).first()
+    sessions = db.query(UserSession).filter(UserSession.user_id == user.id, UserSession.is_revoked == "false").order_by(UserSession.created_at.desc()).all()
+    
+    return [
+        {
+            "id": str(s.id),
+            "device_info": s.device_info,
+            "ip_address": s.ip_address,
+            "created_at": s.created_at.isoformat(),
+            "is_current": str(s.id) == token_data["session_id"]
+        } for s in sessions
+    ]
+
+@app.delete("/users/sessions/{session_id}")
+def revoke_session(session_id: str, token_data: dict = Depends(verify_jwt_token), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == token_data["username"]).first()
+    session_to_revoke = db.query(UserSession).filter(UserSession.id == session_id, UserSession.user_id == user.id).first()
+    if not session_to_revoke:
+        raise HTTPException(status_code=404, detail="Session not found")
+    session_to_revoke.is_revoked = "true"
+    db.commit()
+    return {"message": "Session revoked successfully"}

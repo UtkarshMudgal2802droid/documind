@@ -6,6 +6,7 @@ from app.db.session import Base
 import enum
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey
 
 class UserRole(str, enum.Enum):
     ADMIN = "admin"
@@ -24,6 +25,16 @@ class User(Base):
     
     # Relationship to documents they upload (future expansion)
     # documents = relationship("Document", back_populates="owner")
+
+class UserSession(Base):
+    __tablename__ = "user_sessions"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), index=True, nullable=False)
+    device_info = Column(String, nullable=False)
+    ip_address = Column(String, nullable=False)
+    is_revoked = Column(String, default="false", nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 class ProcessingStatus(str, enum.Enum):
     PENDING = "pending"

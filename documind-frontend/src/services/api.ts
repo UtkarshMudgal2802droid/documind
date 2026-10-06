@@ -1,6 +1,15 @@
 import axios from 'axios';
 import type { UploadResponse, SearchResponse } from '../types/document';
+import type { UploadResponse, SearchResponse } from '../types/document';
 import type { LoginResponse } from '../types/auth';
+
+export interface UserSession {
+    id: string;
+    device_info: string;
+    ip_address: string;
+    created_at: string;
+    is_current: boolean;
+}
 
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_URL || '/api',
@@ -151,6 +160,24 @@ export const documentService = {
         // Clear local token since they just logged out of everything
         localStorage.removeItem(TOKEN_KEY);
         
+        return response.data;
+    },
+
+    getSessions: async (): Promise<UserSession[]> => {
+        const response = await apiClient.get<UserSession[]>('/users/sessions', {
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`
+            }
+        });
+        return response.data;
+    },
+
+    revokeSession: async (sessionId: string): Promise<{ message: string }> => {
+        const response = await apiClient.delete<{ message: string }>(`/users/sessions/${sessionId}`, {
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`
+            }
+        });
         return response.data;
     }
 };

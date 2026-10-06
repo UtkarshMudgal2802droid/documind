@@ -4,6 +4,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import { LogOut, Zap, CheckCircle } from 'lucide-react';
 import { DocumentUpload } from './components/DocumentUpload';
 import { DocumentSearch } from './components/DocumentSearch';
+import { DeviceManager } from './components/DeviceManager';
 import { Login } from './components/Login';
 import { TOKEN_KEY, documentService } from './services/api';
 import './App.css';
@@ -117,14 +118,6 @@ const App: React.FC = () => {
                   <span className="navbar-status-dot" />
                   Connected
                 </div>
-                <button 
-                  className="btn" 
-                  style={{ background: 'transparent', color: '#ef4444', border: '1px solid #ef4444', fontSize: '0.8rem', padding: '0.4rem 0.8rem' }} 
-                  onClick={handleLogoutAll}
-                  title="Sign out from all devices globally"
-                >
-                  Global Sign Out
-                </button>
                 <button className="btn btn-danger" onClick={handleLogout}>
                   <LogOut size={14} />
                   Sign Out
@@ -169,6 +162,7 @@ const App: React.FC = () => {
             >
               <DocumentUpload />
               <DocumentSearch />
+              <DeviceManager onLogoutAll={handleLogoutAll} />
             </motion.div>
           </motion.div>
         )}

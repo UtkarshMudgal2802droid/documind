@@ -2,9 +2,12 @@ import os
 import shutil
 import uuid
 
-from fastapi import Depends, FastAPI, UploadFile, File, HTTPException, Query
+from fastapi import Depends, FastAPI, UploadFile, File, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -45,6 +48,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Security: Rate Limiting ---
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 print("Loading AI Model for Semantic Search...")
 search_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -200,7 +208,8 @@ def search_documents(
 
 
 @app.post("/token")
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Authenticates a user against the database and returns a JWT token."""
     if not form_data.username or not form_data.password:
         raise HTTPException(status_code=400, detail="Username and password are required.")

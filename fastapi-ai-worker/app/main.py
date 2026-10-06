@@ -2,7 +2,7 @@ import os
 import shutil
 import uuid
 
-from fastapi import Depends, FastAPI, UploadFile, File, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, UploadFile, File, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -209,7 +209,7 @@ def search_documents(
 
 @app.post("/token")
 @limiter.limit("5/minute")
-async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login(request: Request, response: Response, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Authenticates a user against the database and returns a JWT token."""
     if not form_data.username or not form_data.password:
         raise HTTPException(status_code=400, detail="Username and password are required.")
@@ -234,7 +234,23 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
     db.refresh(new_session)
 
     access_token = create_access_token(data={"sub": user.username, "sid": str(new_session.id)})
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    response.set_cookie(
+        key="app_token",
+        value=access_token,
+        httponly=True,
+        samesite="none",
+        secure=True,
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer", "message": "Logged in successfully"}
+
+@app.post("/users/logout")
+def logout(response: Response):
+    """Clears the HttpOnly cookie for the current session."""
+    response.delete_cookie("app_token", samesite="none", secure=True)
+    return {"message": "Logged out successfully"}
 
 
 

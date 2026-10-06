@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, User, Eye, EyeOff, AlertCircle, ArrowRight, Sparkles, Shield, Zap, XCircle, CheckCircle } from 'lucide-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { documentService } from '../services/api';
 
 interface LoginProps {
@@ -21,6 +22,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [forgotStatus, setForgotStatus] = useState<'idle' | 'loading'>('idle');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
   const usernameError = touched.username && !username.trim() ? 'Username is required' : '';
   const passwordError = touched.password && !password.trim() ? 'Password is required' : '';
   const isFormValid = username.trim().length > 0 && password.trim().length > 0;
@@ -30,6 +33,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setTouched({ username: true, password: true });
 
     if (!isFormValid) return;
+    if (!turnstileToken) {
+        setErrorMsg('Please complete the security check to verify you are human.');
+        setShowErrorModal(true);
+        return;
+    }
 
     try {
       setStatus('loading');
@@ -199,6 +207,14 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   {passwordError}
                 </div>
               )}
+            </div>
+
+            {/* Cloudflare Turnstile Bot Protection */}
+            <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
+                <Turnstile 
+                    siteKey="1x00000000000000000000AA" 
+                    onSuccess={(token) => setTurnstileToken(token)}
+                />
             </div>
 
             {/* Submit */}

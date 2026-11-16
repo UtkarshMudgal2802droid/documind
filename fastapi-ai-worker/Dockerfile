@@ -24,4 +24,5 @@ RUN mkdir -p /app/uploads
 EXPOSE 8000
 
 # By default, run the API (can be overridden in docker-compose for the worker)
+# TODO: Entrypoint health check verification
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
